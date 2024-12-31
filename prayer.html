@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Islamic Prayer Times</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to top, #e0f7fa, #ffffff);
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 20px;
+            width: 100%;
+            height: 100%;
+            min-height: 100vh; /* Ensure full height */
+        }
+
+        h1 {
+            font-size: 36px;
+            color: #00796b;
+            margin-bottom: 20px;
+        }
+
+        #location {
+            font-size: 18px;
+            font-weight: 600;
+            color: #004d40;
+            margin-bottom: 15px;
+        }
+
+        #current-time, #countdown {
+            font-size: 18px;
+            margin: 15px 0;
+            background-color: #b2dfdb;
+            padding: 12px;
+            border-radius: 10px;
+            color: #004d40;
+            font-weight: 500;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+
+        .prayer {
+            padding: 15px;
+            background-color: #ffffff;
+            border: 2px solid #e0f2f1;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        .prayer.next {
+            background-color: #c8e6c9;
+            border-left: 6px solid #388e3c;
+            font-weight: 600;
+        }
+
+        .prayer.current {
+            background-color: #ffeb3b;
+            border-left: 6px solid #fbc02d;
+            color: #424242;
+            font-weight: 600;
+        }
+
+        .prayer div {
+            font-size: 20px;
+        }
+
+        .prayer:hover {
+            background-color: #e0f2f1;
+            cursor: pointer;
+        }
+
+        .settings-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: #00796b;
+            color: white;
+            font-size: 20px;
+            padding: 10px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+        }
+
+        .settings-button:hover {
+            background-color: #004d40;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background-color: #00796b;
+            color: white;
+            font-size: 20px;
+            padding: 10px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+        }
+
+        .theme-toggle:hover {
+            background-color: #004d40;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 30px;
+            }
+            #current-time, #location, #countdown {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 26px;
+            }
+            #current-time, #location, #countdown {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="settings-button" id="settingsBtn"><i class="fas fa-cogs"></i></button>
+    <button class="theme-toggle" id="themeToggle"><i class="fas fa-adjust"></i></button>
+    <h1>Islamic Prayer Times</h1>
+    <div id="location">Fetching location...</div>
+    <div id="current-time">Fetching time...</div>
+    <div id="container"></div>
+    <div id="countdown">Countdown...</div>
+
+    <script>
+        let timings;
+        let address;
+        let timeFormat = localStorage.getItem('timeFormat') || '12';  // Default to 12-hour format
+        let isDarkMode = localStorage.getItem('isDarkMode') === 'true'; // Check dark mode preference
+
+        // Set the theme based on the user's preference
+        function setTheme() {
+            if (isDarkMode) {
+                document.body.style.background = '#333';
+                document.querySelector('h1').style.color = '#fff';
+                document.querySelector('#location').style.color = '#fff';
+                document.querySelector('#current-time').style.backgroundColor = '#555';
+                document.querySelector('#countdown').style.backgroundColor = '#555';
+                document.querySelectorAll('.prayer').forEach(item => {
+                    item.style.backgroundColor = '#555';
+                    item.style.borderColor = '#666';
+                });
+                document.querySelectorAll('.settings-button, .theme-toggle').forEach(btn => {
+                    btn.style.backgroundColor = '#444';
+                });
+            } else {
+                document.body.style.background = 'linear-gradient(to top, #e0f7fa, #ffffff)';
+                document.querySelector('h1').style.color = '#00796b';
+                document.querySelector('#location').style.color = '#004d40';
+                document.querySelector('#current-time').style.backgroundColor = '#b2dfdb';
+                document.querySelector('#countdown').style.backgroundColor = '#b2dfdb';
+                document.querySelectorAll('.prayer').forEach(item => {
+                    item.style.backgroundColor = 'white';
+                    item.style.borderColor = '#e0f2f1';
+                });
+                document.querySelectorAll('.settings-button, .theme-toggle').forEach(btn => {
+                    btn.style.backgroundColor = '#00796b';
+                });
+            }
+        }
+
+        // Switch between 12-hour and 24-hour format
+        function toggleTimeFormat() {
+            timeFormat = timeFormat === '12' ? '24' : '12';
+            localStorage.setItem('timeFormat', timeFormat);
+            fetchTimings(address);  // Re-fetch timings to update them
+        }
+
+        // Toggle dark/light theme
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            localStorage.setItem('isDarkMode', isDarkMode);
+            setTheme();
+        }
+
+        // Format time to 12-hour format
+        function formatTimeTo12Hour(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const formattedHours = hours % 12 || 12;  // Convert to 12-hour format
+            return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+        }
+
+        // Format time to 24-hour format
+        function formatTimeTo24Hour(timeStr) {
+            return timeStr;
+        }
+
+        // Update current time
+        function updateCurrentTime() {
+            const d = new Date();
+            const options = {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: (timeFormat === '12')
+            };
+            const currentTime = d.toLocaleString('en-US', options);
+            document.getElementById("current-time").textContent = `Current Date & Time: ${currentTime}`;
+        }
+
+        // Fetch prayer timings based on address
+        function fetchTimings(address) {
+            if (!address) {
+                document.getElementById('container').innerHTML = '<p>Unable to fetch prayer times. Please provide a valid address.</p>';
+                return;
+            }
+            const apiURL = `https://api.aladhan.com/v1/timingsByAddress?address=${encodeURIComponent(address)}`;
+
+            fetch(apiURL)
+                .then((res) => res.json())
+                .then((data) => {
+                    timings = data.data.timings;
+
+                    const excludeTimings = ['Imsak', 'Midnight', 'Firstthird', 'Lastthird', 'Sunset', 'Sunrise'];
+
+                    const elements = [];
+                    for (const name in timings) {
+                        if (!excludeTimings.includes(name)) {
+                            const timeStr = timeFormat === '12' 
+                                            ? formatTimeTo12Hour(timings[name]) 
+                                            : formatTimeTo24Hour(timings[name]);
+                            elements.push(`
+                                <div class="prayer" data-time="${timings[name]}" data-name="${name}">
+                                    <div><i class="fas fa-clock"></i> ${name}</div>
+                                    <div>${timeStr}</div>
+                                </div>
+                            `);
+                        }
+                    }
+                    document.getElementById("container").innerHTML = elements.join("");
+                    highlightNextPrayer();
+                });
+        }
+
+        // Highlight the current prayer
+        function highlightNextPrayer() {
+            const d = new Date();
+            const hours = d.getHours().toString().padStart(2, "0");
+            const minutes = d.getMinutes().toString().padStart(2, "0");
+            const time = `${hours}:${minutes}`;
+
+            let nextPrayerTime;
+            for (let i = 0; i < Object.values(timings).length; i++) {
+                if (Object.values(timings)[i] >= time) {
+                    nextPrayerTime = Object.values(timings)[i];
+                    break;
+                }
+            }
+
+            document.querySelectorAll(".prayer").forEach((item) => {
+                item.classList.remove("next", "current");
+                if (nextPrayerTime === item.dataset.time) {
+                    item.classList.add("next");
+                }
+            });
+        }
+
+        // Fetch user's location
+        function fetchUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const { latitude, longitude } = position.coords;
+                    const geoApiURL = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`;
+
+                    fetch(geoApiURL)
+                        .then((res) => res.json())
+                        .then((data) => {
+                            address = data.display_name;
+                            document.getElementById("location").textContent = `Location: ${address}`;
+                            fetchTimings(address);
+                        })
+                        .catch((err) => {
+                            console.error('Error fetching location:', err);
+                            document.getElementById("location").textContent = 'Unable to fetch location. Please enable location services.';
+                        });
+                }, (err) => {
+                    console.error('Error getting location:', err);
+                    document.getElementById("location").textContent = 'Unable to fetch location. Please enable location services.';
+                });
+            } else {
+                document.getElementById("location").textContent = 'Geolocation is not supported by this browser.';
+            }
+        }
+
+        // Initial setup
+        fetchUserLocation();
+        setTheme();
+        updateCurrentTime();
+
+        // Update every second
+        setInterval(() => {
+            updateCurrentTime();
+            if (timings) {
+                highlightNextPrayer();
+            }
+        }, 1000);
+
+        // Event listeners
+        document.getElementById('settingsBtn').addEventListener('click', toggleTimeFormat);
+        document.getElementById('themeToggle').addEventListener('click', toggleDarkMode);
+
+    </script>
+</body>
+</html>

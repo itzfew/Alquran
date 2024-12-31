@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quran Kareem (Ar)</title>
+    <!-- Use Amiri font for Arabic text -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* Base Styles */
+        body {
+            font-size: 16px;
+            font-family: Arial, sans-serif;
+            background-color: white;
+            color: black;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Button Styles */
+        button {
+            padding: 10px 20px;
+            border: 1px solid black;
+            background-color: transparent;
+            color: inherit;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #f0f0f0;
+        }
+
+        button:active {
+            background-color: #d0d0d0;
+        }
+
+        /* Header Styling */
+        .header {
+            text-align: center;
+            margin-top: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .arrow {
+            font-size: 2em;
+            color: black;
+            cursor: pointer;
+            transition: color 0.3s;
+            padding: 0 20px;
+        }
+
+        .arrow:hover {
+            color: #007bff;
+        }
+
+        .arrow-left {
+            position: absolute;
+            left: 0;
+        }
+
+        .arrow-right {
+            position: absolute;
+            right: 0;
+        }
+
+        .surah-heading {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: black;
+            margin: 0 50px;
+        }
+
+        @media (max-width: 768px) {
+            .arrow {
+                font-size: 1.5em;
+            }
+
+            .surah-heading {
+                font-size: 1.8em;
+            }
+        }
+
+        /* Language Dropdown Styling */
+        .language-dropdown {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            font-size: 1.2em;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .language-dropdown button {
+            background-color: #ffffff;
+            
+            color: black;
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: 1px solid black;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+
+        .language-dropdown-content {
+            display: none;
+            flex-direction: column;
+            margin-top: 10px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .language-dropdown-content label {
+            padding: 10px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .language-dropdown-content input {
+            margin-right: 10px;
+        }
+
+        .language-dropdown.open .language-dropdown-content {
+            display: flex;
+        }
+
+        /* First Verse Styling */
+        .first-verse {
+            text-align: center;
+            font-size: 1.2em;
+            margin: 10px 0;
+            padding: 5px;
+            font-weight: bold;
+        }
+
+        /* Verse Styling */
+        .verse {
+            margin: 1px 0;
+            padding: 10px;
+            font-size: 1.0em;
+            direction: ltr;
+            text-align: right;
+            cursor: pointer;
+            font-family: 'Amiri', serif;
+            color: black; /* Black text */
+            background-color: white; /* White background */
+         
+        }
+
+        .verse-number {
+            font-size: 1em;
+            font-weight: bold;
+            background-color: #f4f4f4;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+
+        /* Verse Divider Line */
+        .verse-divider {
+            border-top: 1px solid #000;
+            margin: 10px 0;
+        }
+
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 10px;
+            right: 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .back-to-top:hover {
+            background-color: #0056b3;
+        }
+
+        /* Selected Verse */
+      
+        }
+
+        /* Simplified Verse Styling */
+        .verse-content {
+            padding: 10px 0;
+        }
+
+        .arabic-text,
+        .translation-text,
+        .urdu-text {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Language Dropdown -->
+    <div class="language-dropdown" id="languageDropdown">
+        <button><i class="fas fa-language"></i> Select Languages</button>
+        <div class="language-dropdown-content">
+            <label>
+                <input type="checkbox" name="language" value="arabic" onclick="updateLanguages()"> Arabic
+            </label>
+            <label>
+                <input type="checkbox" name="language" value="english" onclick="updateLanguages()"> English
+            </label>
+            <label>
+                <input type="checkbox" name="language" value="urdu" onclick="updateLanguages()"> Urdu
+            </label>
+        </div>
+    </div>
+
+    <div class="header">
+        <i class="fas fa-arrow-left arrow arrow-left" onclick="navigateSurah(-1)"></i>
+        <div id="surah-heading" class="surah-heading" style="display: none;"></div>
+        <i class="fas fa-arrow-right arrow arrow-right" onclick="navigateSurah(1)"></i>
+    </div>
+    <div id="first-verse" class="first-verse" style="display: none;"></div>
+    <div id="content"></div>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" onclick="scrollToTop()">
+        <i class="fas fa-arrow-up"></i> 
+    </button>
+
+    <script>
+        // Store selected languages
+        let selectedLanguages = JSON.parse(localStorage.getItem('selectedLanguages')) || ['arabic'];
+
+        // Fetch and display surah data
+        document.addEventListener('DOMContentLoaded', () => {
+            const index = getQueryParam('index');
+            fetchSurah(index ? index : 1);
+            setInitialLanguageSelection();
+        });
+
+        // Get query param from URL
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Fetch Surah data
+        async function fetchSurah(index) {
+            const arabicResponse = await fetch(`https://raw.githubusercontent.com/itzfew/Quran-Online/refs/heads/main/source/surah/surah_${String(index).padStart(1, '0')}.json`);
+            const arabicData = await arabicResponse.json();
+
+            const translationResponse = await fetch(`https://raw.githubusercontent.com/itzfew/Quran-Online/refs/heads/main/source/translation/en/en_translation_${String(index).padStart(1, '0')}.json`);
+            const translationData = await translationResponse.json();
+
+            const urduResponse = await fetch(`https://raw.githubusercontent.com/itzfew/Quran-Online/refs/heads/main/source/translation/ur/t_surah_${String(index).padStart(3, '0')}.json`);
+            const urduData = await urduResponse.json();
+
+            displaySurah(arabicData, translationData, urduData);
+        }
+
+        // Update the selected languages based on checkboxes
+        function updateLanguages() {
+            const checkboxes = document.querySelectorAll('input[name="language"]:checked');
+            selectedLanguages = Array.from(checkboxes).map(checkbox => checkbox.value);
+            localStorage.setItem('selectedLanguages', JSON.stringify(selectedLanguages)); // Save to localStorage
+            const index = getQueryParam('index');
+            fetchSurah(index ? index : 1);
+        }
+
+        // Set initial state of language selection based on stored preferences
+        function setInitialLanguageSelection() {
+            const checkboxes = document.querySelectorAll('input[name="language"]');
+            checkboxes.forEach(checkbox => {
+                if (selectedLanguages.includes(checkbox.value)) {
+                    checkbox.checked = true;
+                }
+            });
+        }
+
+        // Display Surah with selected languages
+        function displaySurah(arabicData, translationData, urduData) {
+            const surahHeading = document.getElementById('surah-heading');
+            const firstVerse = document.getElementById('first-verse');
+            const content = document.getElementById('content');
+            const count = arabicData.count;
+            const arabicVerses = arabicData.verse;
+            const translationVerses = translationData.verse;
+            const urduVerses = urduData.data;
+
+            surahHeading.style.display = 'block';
+            firstVerse.style.display = 'block';
+            content.innerHTML = ''; // Clear content
+
+            surahHeading.innerText = arabicData.name;
+            firstVerse.innerText = arabicVerses['verse_0']; // Display translation of verse_0 separately
+
+            // Loop through verses starting from verse_1
+            for (let i = 1; i <= count; i++) {
+                const arabicVerse = arabicVerses[`verse_${i}`];
+                const translatedVerse = translationVerses[`verse_${i}`];
+                const urduVerse = urduVerses.find(v => v.aya == i.toString())?.text || ''; // Find corresponding Urdu translation
+
+                const verseDiv = document.createElement('div');
+                verseDiv.classList.add('verse');
+                verseDiv.setAttribute('id', `verse-${i}`);
+
+                let verseContent = '';
+                if (selectedLanguages.includes('arabic')) {
+                    verseContent += `<div class="arabic-text">${arabicVerse}</div>`;
+                }
+                if (selectedLanguages.includes('english')) {
+                    verseContent += `<div class="translation-text">${translatedVerse}</div>`;
+                }
+                if (selectedLanguages.includes('urdu')) {
+                    verseContent += `<div class="urdu-text">${urduVerse}</div>`;
+                }
+
+                verseDiv.innerHTML = `
+                    <div class="verse-content">
+                        ${verseContent}
+                        <span class="verse-number">${i}</span>
+                    </div>
+                `;
+
+                // Add Divider Line Between Verses
+                const dividerLine = document.createElement('div');
+                dividerLine.classList.add('verse-divider');
+                verseDiv.appendChild(dividerLine);
+
+                verseDiv.addEventListener('click', () => {
+                    verseDiv.classList.toggle('selected');
+                });
+
+                content.appendChild(verseDiv);
+            }
+        }
+
+        // Scroll to top functionality
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Toggle language dropdown visibility
+        document.getElementById('languageDropdown').addEventListener('click', function (event) {
+            const dropdown = this;
+            if (!dropdown.classList.contains('open')) {
+                dropdown.classList.add('open');
+            } else {
+                // Close dropdown if clicked outside
+                window.addEventListener('click', (e) => {
+                    if (!dropdown.contains(e.target)) {
+                        dropdown.classList.remove('open');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
