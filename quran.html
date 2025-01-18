@@ -6,6 +6,181 @@
   <title>Multi-Language Quran Viewer</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
+/* General Styles */
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: #f1f5f8;
+  color: #444;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+/* Header Styles */
+header {
+  background-color: #1f3a54;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  font-size: 26px;
+  font-weight: 500;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Settings Icon Styles */
+#settings-icon {
+  font-size: 32px;
+  color: #1f3a54;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  cursor: pointer;
+  z-index: 1000;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+#settings-icon:hover {
+  transform: rotate(90deg);
+  color: #3498db;
+}
+
+/* Settings Panel Styles */
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 70%;
+  height: 100%;
+  background-color: #fff;
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.1);
+  transition: right 0.5s ease;
+  padding: 30px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* Open the panel */
+.settings-panel.open {
+  right: 0;
+}
+
+/* Close Button */
+.close-btn {
+  font-size: 28px;
+  color: #1f3a54;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  color: #e74c3c;
+}
+
+/* Settings Form */
+.settings-panel label {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #34495e;
+}
+
+select {
+  width: 100%;
+  padding: 12px;
+  margin: 15px 0;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 16px;
+  background-color: #fafafa;
+  transition: border 0.3s ease;
+}
+
+select:focus {
+  border: 1px solid #3498db;
+  background-color: #fff;
+}
+
+button {
+  padding: 14px 30px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background-color 0.3s ease;
+  width: 100%;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
+
+button:disabled {
+  background-color: #bbb;
+  cursor: not-allowed;
+}
+
+/* Content Styling */
+.content {
+  margin: 20px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: margin-right 0.5s ease;
+}
+
+.ayah-container {
+  background-color: #ffffff;
+  padding: 20px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.text {
+  font-size: 20px;
+  line-height: 1.8;
+  color: #2c3e50;
+  text-align: justify;
+}
+
+.language {
+  margin-top: 15px;
+  font-size: 17px;
+  font-weight: bold;
+  color: #16a085;
+}
+
+.language div {
+  margin: 8px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  header {
+    font-size: 22px;
+  }
+
+  .settings-panel {
+    width: 80%;
+  }
+
+  .content {
+    margin-right: 0;
+  }
+
+  .ayah-container {
+    padding: 15px;
+  }
+
+  button {
+    font-size: 16px;
+  }
+}
 
   </style>
 </head>
