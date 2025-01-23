@@ -75,11 +75,9 @@
             background-color: #f0f0f0;
         }
         .calendar td.current-day {
-    background-color: #F08080; /* Light Blue */
-    
-    font-weight: bold;
-}
-
+            background-color: #F08080; /* Light Blue */
+            font-weight: bold;
+        }
         .hijri {
             font-size: 0.7em;
             vertical-align: sub;
@@ -118,26 +116,36 @@
         .popup p {
             margin: 10px 0;
         }
-/* Buttons for month navigation */
-#month-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
 
-#month-nav button {
-    font-size: 1.5rem;
-    background-color: #f1f1f1;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-}
+        /* Buttons for month navigation */
+        #month-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
 
-#month-nav button:hover {
-    background-color: #ddd;
-} 
+        #month-nav button {
+            font-size: 1.5rem;
+            background-color: #f1f1f1;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #month-nav button:hover {
+            background-color: #ddd;
+        }
+
+        /* Display current date details */
+        .current-date-info {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
         /* Media Queries for Responsiveness */
         @media (max-width: 600px) {
             h1 {
@@ -159,6 +167,7 @@
                 padding: 15px;
             }
         }
+
         @media (max-width: 400px) {
             h1 {
                 font-size: 1.5rem;
@@ -174,12 +183,6 @@
                 font-size: 0.7rem;
                 padding: 5px;
             }
-        }
-
-        /* Highlight the current day */
-        .current-day {
-            background-color: #007bff;
-            color: white;
         }
     </style>
 </head>
@@ -211,6 +214,13 @@
         </div>
     </div>
 
+    <!-- Current Date Info -->
+    <div class="current-date-info" id="current-date-info">
+        <p>Date: <span id="current-gregorian-date"></span> - <span id="current-weekday"></span></p>
+        <p>Hijri: <span id="current-hijri-date"></span></p>
+        <p id="current-holiday-info"></p>
+    </div>
+
     <!-- Popup Modal -->
     <div class="popup" id="popup">
         <div class="popup-content">
@@ -221,24 +231,23 @@
     </div>
 
     <script>
-        // Get current year, month, and day dynamically
         const currentDate = new Date();
         let currentYear = currentDate.getFullYear();
-        let currentMonth = currentDate.getMonth(); // JavaScript months are zero-indexed
+        let currentMonth = currentDate.getMonth();
         const currentDay = currentDate.getDate();
+        const currentWeekday = currentDate.toLocaleString('en-US', { weekday: 'long' });
 
         const gregorianUrl = `https://api.aladhan.com/v1/gToHCalendar/${currentMonth + 1}/${currentYear}?calendarMethod=UAQ`;
 
-        // Fetch Gregorian and Hijri dates
         fetch(gregorianUrl)
             .then(response => response.json())
             .then(data => {
                 const gregorianData = data.data;
                 buildGregorianCalendar(gregorianData);
+                displayCurrentDate(gregorianData);
             })
             .catch(error => console.error('Error fetching data:', error));
 
-        // Function to build Gregorian calendar with Hijri subscript and popup
         function buildGregorianCalendar(data) {
             const gregorianBody = document.getElementById('gregorian-body');
             const monthName = document.getElementById('month-name');
@@ -247,26 +256,22 @@
             let currentRow = [];
             let hijriIndex = 0;
 
-            // Set the month name at the top
             const gregorianMonth = data[0].gregorian.month.en;
             const hijriMonth = data[0].hijri.month.en;
             monthName.innerHTML = `${gregorianMonth}<sup class="hijri">${hijriMonth}</sup> ${currentYear}`;
 
-            // Loop through the 6 weeks (6 rows) of the month
             for (let i = 0; i < 6; i++) {
                 currentRow = [];
                 for (let j = 0; j < 7; j++) {
-                    // Skip empty cells before the 1st day of the month
                     if (dayCounter <= 31 && (i > 0 || j >= new Date(currentYear, currentMonth, 1).getDay())) {
                         const gregorianDate = dayCounter;
-                        const hijriDate = data[hijriIndex]?.hijri.date.split('-')[0]; // Get Hijri date (DD)
-                        const holiday = data[hijriIndex]?.hijri.holidays.join(", "); // Get holidays
+                        const hijriDate = data[hijriIndex]?.hijri.date.split('-')[0];
+                        const holiday = data[hijriIndex]?.hijri.holidays.join(", ");
                         hijriIndex++;
 
-                        // Add Gregorian date with Hijri subscript, holiday popup, and green dot for holidays
                         let dayClass = '';
                         if (gregorianDate === currentDay && currentMonth === new Date().getMonth()) {
-                            dayClass = 'current-day'; // Highlight the current day
+                            dayClass = 'current-day';
                         }
 
                         currentRow.push(`
@@ -285,7 +290,15 @@
             gregorianBody.innerHTML = rows.join('');
         }
 
-        // Show Popup function
+        function displayCurrentDate(data) {
+            const currentHijriDate = data[currentDay - 1]?.hijri.date.split('-')[0] || '';
+            const holiday = data[currentDay - 1]?.hijri.holidays.join(", ") || 'No holidays';
+            document.getElementById('current-gregorian-date').textContent = currentDay;
+            document.getElementById('current-weekday').textContent = currentWeekday;
+            document.getElementById('current-hijri-date').textContent = currentHijriDate;
+            document.getElementById('current-holiday-info').textContent = holiday;
+        }
+
         function showPopup(gregorianDate, hijriDate, holiday) {
             const popup = document.getElementById('popup');
             const popupGregorianDate = document.getElementById('popup-gregorian-date');
@@ -299,20 +312,18 @@
             popup.style.display = 'flex';
         }
 
-        // Hide Popup function
         function hidePopup() {
             const popup = document.getElementById('popup');
             popup.style.display = 'none';
         }
 
-        // Change Month Function
         function changeMonth(direction) {
             currentMonth += direction;
             if (currentMonth < 0) {
-                currentMonth = 11; // Go to December
+                currentMonth = 11;
                 currentYear--;
             } else if (currentMonth > 11) {
-                currentMonth = 0; // Go to January
+                currentMonth = 0;
                 currentYear++;
             }
             const gregorianUrl = `https://api.aladhan.com/v1/gToHCalendar/${currentMonth + 1}/${currentYear}?calendarMethod=UAQ`;
