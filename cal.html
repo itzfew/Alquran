@@ -9,7 +9,6 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-           
             margin: 0;
             padding: 0;
             display: flex;
@@ -17,6 +16,7 @@
             align-items: center;
             height: 100vh;
             flex-direction: column;
+            background-color: #f4f4f9;
         }
         h1 {
             font-size: 2.5rem;
@@ -28,16 +28,15 @@
             justify-content: center;
             flex-wrap: wrap;
             margin-top: 20px;
+            width: 100%;
+            padding: 0 10px;
         }
         .calendar {
-            width: 80%;
-            max-width: 700px;
-            margin: 10px;
-            padding: 20px;
-            
+            width: 100%;
+            margin: 5px;
+            padding: 20px; 
             border-radius: 10px;
-            
-            
+          
         }
         .calendar h2 {
             text-align: center;
@@ -114,6 +113,44 @@
         }
         .popup p {
             margin: 10px 0;
+        }
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            .calendar {
+                width: 100%;
+                padding: 15px;
+            }
+            .calendar h2 {
+                font-size: 1.5rem;
+            }
+            .calendar table th, .calendar table td {
+                font-size: 0.9rem;
+                padding: 8px;
+            }
+            .popup-content {
+                width: 80%;
+                padding: 15px;
+            }
+        }
+        @media (max-width: 400px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            .calendar {
+                width: 100%;
+                padding: 10px;
+            }
+            .calendar h2 {
+                font-size: 1.2rem;
+            }
+            .calendar table th, .calendar table td {
+                font-size: 0.8rem;
+                padding: 6px;
+            }
         }
     </style>
 </head>
