@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gregorian & Hijri Calendar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .calendar-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .calendar {
+            width: 80%;
+            margin: 10px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .calendar h2 {
+            text-align: center;
+            color: #333;
+        }
+        .calendar table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .calendar table th, .calendar table td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        .calendar table th {
+            background-color: #f4f4f4;
+        }
+        .calendar table td {
+            cursor: pointer;
+        }
+        .highlight {
+            background-color: #ffdd57;
+        }
+        .hijri {
+            font-size: 0.6em;
+            vertical-align: sub;
+            color: #555;
+        }
+        .tooltip {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            max-width: 200px;
+        }
+        .tooltip p {
+            margin: 0;
+        }
+        .calendar td:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Gregorian Calendar with Hijri Subscript - January 2025</h1>
+    <div class="calendar-container">
+        <div class="calendar" id="gregorian-calendar">
+            <h2>Gregorian Calendar - January 2025</h2>
+            <div id="month-name"></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sun<sup class="hijri">أحد</sup></th>
+                        <th>Mon<sup class="hijri">اثنين</sup></th>
+                        <th>Tue<sup class="hijri">ثلاثاء</sup></th>
+                        <th>Wed<sup class="hijri">أربعاء</sup></th>
+                        <th>Thu<sup class="hijri">خميس</sup></th>
+                        <th>Fri<sup class="hijri">جمعة</sup></th>
+                        <th>Sat<sup class="hijri">سبت</sup></th>
+                    </tr>
+                </thead>
+                <tbody id="gregorian-body">
+                    <!-- Gregorian dates will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        const gregorianUrl = 'https://api.aladhan.com/v1/gToHCalendar/1/2025?calendarMethod=UAQ';
+
+        // Fetch Gregorian and Hijri dates
+        fetch(gregorianUrl)
+            .then(response => response.json())
+            .then(data => {
+                const gregorianData = data.data;
+                buildGregorianCalendar(gregorianData);
+            })
+            .catch(error => console.error('Error fetching data:', error));
+
+        // Function to build Gregorian calendar with Hijri subscript and tooltips
+        function buildGregorianCalendar(data) {
+            const gregorianBody = document.getElementById('gregorian-body');
+            const monthName = document.getElementById('month-name');
+            const tooltip = document.getElementById('tooltip');
+            const rows = [];
+            let dayCounter = 1;
+            let currentRow = [];
+            let hijriIndex = 0;
+
+            // Set the month name at the top
+            const gregorianMonth = data[0].gregorian.month.en;
+            const hijriMonth = data[0].hijri.month.en;
+            monthName.innerHTML = `<h2>${gregorianMonth}<sup class="hijri">${hijriMonth}</sup> 2025</h2>`;
+
+            // Loop through the 6 weeks (6 rows) of the month
+            for (let i = 0; i < 6; i++) {
+                currentRow = [];
+                for (let j = 0; j < 7; j++) {
+                    // Skip empty cells before the 1st day of the month
+                    if (dayCounter <= 31 && (i > 0 || j >= new Date(2025, 0, 1).getDay())) {
+                        const gregorianDate = dayCounter;
+                        const hijriDate = data[hijriIndex]?.hijri.date.split('-')[0]; // Get Hijri date (DD)
+                        const hijriWeekday = data[hijriIndex]?.hijri.weekday.en; // Get Hijri weekday
+                        const holiday = data[hijriIndex]?.hijri.holidays.join(", "); // Get holidays
+                        const gregorianWeekday = data[hijriIndex]?.gregorian.weekday.en; // Get Gregorian weekday
+                        const gregorianYear = data[0]?.gregorian.year; // Get Gregorian year
+                        const hijriYear = data[hijriIndex]?.hijri.year; // Get Hijri year
+                        hijriIndex++;
+
+                        // Add Gregorian date with Hijri subscript and holiday tooltip
+                        currentRow.push(`
+                            <td onmouseover="showTooltip(event, '${holiday}')">
+                                ${gregorianDate}<sup class="hijri">${hijriDate}</sup>
+                            </td>
+                        `);
+                        dayCounter++;
+                    } else {
+                        currentRow.push('<td></td>');
+                    }
+                }
+                rows.push(`<tr>${currentRow.join('')}</tr>`);
+            }
+            gregorianBody.innerHTML = rows.join('');
+        }
+
+        // Tooltip display function
+        function showTooltip(event, holiday) {
+            const tooltip = document.getElementById('tooltip');
+            if (holiday) {
+                tooltip.style.display = 'block';
+                tooltip.style.left = `${event.pageX + 10}px`;
+                tooltip.style.top = `${event.pageY + 10}px`;
+
+                tooltip.innerHTML = `<p><strong>Holiday:</strong> ${holiday}</p>`;
+            } else {
+                tooltip.style.display = 'none';
+            }
+        }
+
+        // Hide tooltip function
+        function hideTooltip() {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
