@@ -40,6 +40,16 @@
         }
         .calendar table td {
             cursor: pointer;
+            position: relative;
+        }
+        .calendar td .green-dot {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: green;
         }
         .highlight {
             background-color: #ffdd57;
@@ -136,10 +146,11 @@
                         const hijriYear = data[hijriIndex]?.hijri.year; // Get Hijri year
                         hijriIndex++;
 
-                        // Add Gregorian date with Hijri subscript and holiday tooltip
+                        // Add Gregorian date with Hijri subscript, holiday tooltip, and green dot for holidays
                         currentRow.push(`
                             <td onmouseover="showTooltip(event, '${holiday}')">
                                 ${gregorianDate}<sup class="hijri">${hijriDate}</sup>
+                                ${holiday ? '<span class="green-dot"></span>' : ''}
                             </td>
                         `);
                         dayCounter++;
