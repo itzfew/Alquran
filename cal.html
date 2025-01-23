@@ -152,6 +152,12 @@
                 padding: 6px;
             }
         }
+
+        /* Highlight the current day */
+        .current-day {
+            background-color: #007bff;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -189,7 +195,13 @@
     </div>
 
     <script>
-        const gregorianUrl = 'https://api.aladhan.com/v1/gToHCalendar/1/2025?calendarMethod=UAQ';
+        // Get current year, month, and day dynamically
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1; // JavaScript months are zero-indexed
+        const currentDay = currentDate.getDate();
+
+        const gregorianUrl = `https://api.aladhan.com/v1/gToHCalendar/${currentMonth}/${currentYear}?calendarMethod=UAQ`;
 
         // Fetch Gregorian and Hijri dates
         fetch(gregorianUrl)
@@ -212,22 +224,27 @@
             // Set the month name at the top
             const gregorianMonth = data[0].gregorian.month.en;
             const hijriMonth = data[0].hijri.month.en;
-            monthName.innerHTML = `<h2>${gregorianMonth}<sup class="hijri">${hijriMonth}</sup> 2025</h2>`;
+            monthName.innerHTML = `<h2>${gregorianMonth}<sup class="hijri">${hijriMonth}</sup> ${currentYear}</h2>`;
 
             // Loop through the 6 weeks (6 rows) of the month
             for (let i = 0; i < 6; i++) {
                 currentRow = [];
                 for (let j = 0; j < 7; j++) {
                     // Skip empty cells before the 1st day of the month
-                    if (dayCounter <= 31 && (i > 0 || j >= new Date(2025, 0, 1).getDay())) {
+                    if (dayCounter <= 31 && (i > 0 || j >= new Date(currentYear, currentMonth - 1, 1).getDay())) {
                         const gregorianDate = dayCounter;
                         const hijriDate = data[hijriIndex]?.hijri.date.split('-')[0]; // Get Hijri date (DD)
                         const holiday = data[hijriIndex]?.hijri.holidays.join(", "); // Get holidays
                         hijriIndex++;
 
                         // Add Gregorian date with Hijri subscript, holiday popup, and green dot for holidays
+                        let dayClass = '';
+                        if (gregorianDate === currentDay) {
+                            dayClass = 'current-day'; // Highlight the current day
+                        }
+
                         currentRow.push(`
-                            <td onclick="showPopup('${gregorianDate}', '${hijriDate}', '${holiday}')">
+                            <td class="${dayClass}" onclick="showPopup('${gregorianDate}', '${hijriDate}', '${holiday}')">
                                 ${gregorianDate}<sup class="hijri">${hijriDate}</sup>
                                 ${holiday ? '<span class="green-dot"></span>' : ''}
                             </td>
